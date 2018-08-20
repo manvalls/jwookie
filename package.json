@@ -1,0 +1,18 @@
+{
+  "name": "jwookie",
+  "version": "1.0.0",
+  "description": "",
+  "main": "main.js",
+  "dependencies": {
+    "jwit": "^3.0.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/manvalls/jwookie.git"
+  },
+  "bugs": {
+    "url": "https://github.com/manvalls/jwookie/issues"
+  },
+  "author": "Manuel Valls Fernández <manolo@vlrz.es>",
+  "license": "Apache-2.0"
+}
