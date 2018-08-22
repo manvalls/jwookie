@@ -16,10 +16,10 @@ require('jwit');
       if (queue.length) {
         res = queue.shift();
         processing = true;
-        wit.apply(res[0])(function(){
+        wit.apply(res[0],res[1])(function(){
           processing = false;
           checkQueue();
-          res[1]();
+          res[2]();
         });
       } else if (endOfQueueListeners.length) {
         listeners = endOfQueueListeners;
@@ -34,10 +34,10 @@ require('jwit');
     }
   }
 
-  function apply(delta){
+  function apply(delta, rootNode){
     return function(cb){
       cb = cb || function(){};
-      queue.push([delta,cb]);
+      queue.push([delta,rootNode,cb]);
       checkQueue();
     };
   }
