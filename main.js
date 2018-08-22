@@ -150,7 +150,7 @@ require('jwit');
             }
           }
 
-          apply(delta)(cb);
+          apply(delta, undefined)(cb);
         };
 
         xhr.onerror = function(err){
