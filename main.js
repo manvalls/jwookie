@@ -290,35 +290,60 @@ require('jwit');
 
   function onFormSubmit(e){
     var headers = {};
-    var url, body;
+    var clickedSubmit = this['__wookie_lastClickedSubmit'];
+    var url, body, method, oldEncoding;
 
-    if (this.target && this.target != '_self') {
+    if ((this.target && this.target != '_self') || (clickedSubmit && clickedSubmit.formTarget && clickedSubmit.formTarget != '_self')) {
       return;
     }
 
-    e.preventDefault();
     getHeaders(this, 'data-', '-header', headers);
+    if (clickedSubmit) {
+      getHeaders(clickedSubmit, 'data-', '-header', headers);
+    }
 
-    url = this.action || location.href;
+    method = (clickedSubmit && clickedSubmit.formMethod) || this.method || 'GET';
+    url = (clickedSubmit && clickedSubmit.formAction) || this.action || location.href;
     url = url.replace(/#.*$/, '');
 
-    if (!this.method || this.method.toLowerCase() == 'get') {
+    if (method.toLowerCase() == 'get') {
       body = null;
       url = getValues(url, null, null, this);
     } else {
-      body = new FormData(this);
+      if (!w.FormData) {
+        return;
+      }
+
+      if (clickedSubmit && clickedSubmit.formEncType) {
+        oldEncoding = this.encoding;
+        this.encoding = clickedSubmit.formEncType;
+      }
+
+      body = getValues(null, null, null, this);
+
+      if (clickedSubmit && clickedSubmit.formEncType) {
+        this.encoding = oldEncoding;
+      }
     }
+
+    e.preventDefault();
 
     loading['trigger'](this);
     request({
       'url': url,
       'headers': headers,
-      'method': this.method,
+      'method': method,
       'body': body,
-      'asynchronous': this.getAttribute('data-async') != null
+      'asynchronous': this.getAttribute('data-async') != null || (clickedSubmit && clickedSubmit.getAttribute('data-async') != null)
     })(function(err){
       loaded['trigger'](this, err);
     });
+  }
+
+  function onSubmitButtonClick(){
+    if (this.form) {
+      this.form['__wookie_lastClickedSubmit'] = this;
+    }
   }
 
   function bindAnchors(anchors){
@@ -337,10 +362,6 @@ require('jwit');
   function bindForms(forms){
     var i,f;
 
-    if (!w.FormData) {
-      return;
-    }
-
     for(i = 0;i < forms.length;i++){
       f = forms[i];
       if (f.addEventListener) {
@@ -351,13 +372,29 @@ require('jwit');
     }
   }
 
+  function bindSubmitButtons(submitButtons){
+    var i,b;
+
+    for(i = 0;i < submitButtons.length;i++){
+      b = submitButtons[i];
+      if (b.addEventListener) {
+        b.addEventListener('click', onSubmitButtonClick, false);
+      } else if (b.attachEvent) {
+        b.attachEvent('onclick', onSubmitButtonClick);
+      }
+    }
+  }
+
   function processFragment(fragment){
     var anchors = fragment.querySelectorAll('a[data-wk]');
     var forms = fragment.querySelectorAll('form[data-wk]');
+    var submitButtons = fragment.querySelectorAll('input[type=submit], button[type=submit], input[type=image]');
     var toRun = fragment.querySelectorAll('[data-wkrun]');
 
     bindAnchors(anchors);
     bindForms(forms);
+    debugger;
+    bindSubmitButtons(submitButtons);
     runWitCalls(toRun);
   }
 
