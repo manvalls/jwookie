@@ -271,6 +271,10 @@ require('jwit');
   function onAnchorClick(e){
     var headers = {};
 
+    if (this.target && this.target != '_self') {
+      return;
+    }
+
     e.preventDefault();
     getHeaders(this, 'data-', '-header', headers);
 
@@ -287,6 +291,10 @@ require('jwit');
   function onFormSubmit(e){
     var headers = {};
     var url, body;
+
+    if (this.target && this.target != '_self') {
+      return;
+    }
 
     e.preventDefault();
     getHeaders(this, 'data-', '-header', headers);
