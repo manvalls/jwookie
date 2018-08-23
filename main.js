@@ -219,6 +219,55 @@ require('jwit');
     }
   }
 
+  function getValues(baseURL, whitelist, blacklist, form) {
+    var pairs, body, element, i, sep;
+
+    if (baseURL) {
+      pairs = [];
+    } else if(!whitelist && !blacklist) {
+      return new FormData(form);
+    } else {
+      body = new FormData();
+    }
+
+    for (i = 0;i < form.elements.length;i++) {
+      element = form.elements[i];
+      if (element.hasAttribute('name')) {
+        switch (element.type.toLowerCase()) {
+          case 'radio':
+          case 'checkbox':
+            if (!element.checked) {
+              break;
+            }
+          default:
+
+            if (whitelist && whitelist.indexOf(element.name) == -1) {
+              break;
+            }
+
+            if (blacklist && blacklist.indexOf(element.name) != -1) {
+              break;
+            }
+
+            if (baseURL) {
+              pairs.push(encodeURIComponent(element.name) + (element.value ? '=' + encodeURIComponent(element.value) : ''));
+            } else {
+              body.append(element.name, element.value);
+            }
+
+            break;
+
+        }
+      }
+    }
+
+    if (baseURL) {
+      return baseURL.replace(/\?.*$/, '') + '?' + pairs.join('&');
+    }
+
+    return body;
+  }
+
   function onAnchorClick(e){
     var headers = {};
 
@@ -237,7 +286,7 @@ require('jwit');
 
   function onFormSubmit(e){
     var headers = {};
-    var url, body, i, element, pairs;
+    var url, body;
 
     e.preventDefault();
     getHeaders(this, 'data-', '-header', headers);
@@ -246,30 +295,8 @@ require('jwit');
     url = url.replace(/#.*$/, '');
 
     if (!this.method || this.method.toLowerCase() == 'get') {
-      pairs = [];
       body = null;
-
-      for (i = 0;i < this.elements.length;i++) {
-        element = this.elements[i];
-        if (element.hasAttribute('name')) {
-          switch (element.type.toLowerCase()) {
-            case 'radio':
-            case 'checkbox':
-              if (!element.checked) {
-                break;
-              }
-            default:
-              pairs.push(encodeURIComponent(element.name) + (element.value ? '=' + encodeURIComponent(element.value) : ''));
-              break;
-          }
-        }
-      }
-
-      if (url.indexOf('?') != -1) {
-        url += '&' + pairs.join('&');
-      } else {
-        url += '?' + pairs.join('&');
-      }
+      url = getValues(url, null, null, this);
     } else {
       body = new FormData(this);
     }
