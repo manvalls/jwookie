@@ -160,6 +160,9 @@ require('jwit');
 
         xhr.open(method, url, true);
         xhr.setRequestHeader('Accept', 'application/json');
+        if (asynchronous) {
+          xhr.setRequestHeader('X-Async', 'true');
+        }
 
         if (w['wok']) {
           for (i in wok) if(wok.hasOwnProperty(i)) {
