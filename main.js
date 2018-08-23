@@ -393,7 +393,6 @@ require('jwit');
 
     bindAnchors(anchors);
     bindForms(forms);
-    debugger;
     bindSubmitButtons(submitButtons);
     runWitCalls(toRun);
   }
