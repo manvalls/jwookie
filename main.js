@@ -237,12 +237,12 @@ require('jwit');
     return [formElement.value];
   }
 
-  function getValues(baseURL, whitelist, blacklist, form) {
+  function getValues(baseURL, whitelist, form) {
     var pairs, body, element, i, j, sep, values;
 
     if (baseURL) {
       pairs = [];
-    } else if(!whitelist && !blacklist) {
+    } else if(!whitelist) {
       return new FormData(form);
     } else {
       body = new FormData();
@@ -260,10 +260,6 @@ require('jwit');
           default:
 
             if (whitelist && whitelist.indexOf(element.name) == -1) {
-              break;
-            }
-
-            if (blacklist && blacklist.indexOf(element.name) != -1) {
               break;
             }
 
@@ -329,7 +325,7 @@ require('jwit');
 
     if (method.toLowerCase() == 'get') {
       body = null;
-      url = getValues(url, null, null, this);
+      url = getValues(url, null, this);
     } else {
       if (!w.FormData) {
         return;
@@ -340,7 +336,7 @@ require('jwit');
         this.encoding = clickedSubmit.formEncType;
       }
 
-      body = getValues(null, null, null, this);
+      body = getValues(null, null, this);
 
       if (clickedSubmit && clickedSubmit.formEncType) {
         this.encoding = oldEncoding;
@@ -349,7 +345,7 @@ require('jwit');
 
     e.preventDefault();
 
-    loading['trigger'](this);
+    loading['trigger']([this]);
     request({
       'url': url,
       'headers': headers,
@@ -357,7 +353,7 @@ require('jwit');
       'body': body,
       'asynchronous': this.getAttribute('data-async') != null || (clickedSubmit && clickedSubmit.getAttribute('data-async') != null)
     })(function(err){
-      loaded['trigger'](this, err);
+      loaded['trigger']([this], err);
     });
   }
 
@@ -367,41 +363,184 @@ require('jwit');
     }
   }
 
-  function bindAnchors(anchors){
-    var i,a;
+  function onInputChange(){
+    onInputBlur.call(this);
+  }
 
-    for(i = 0;i < anchors.length;i++){
-      a = anchors[i];
-      if (a.addEventListener) {
-        a.addEventListener('click', onAnchorClick, false);
-      } else if (a.attachEvent) {
-        a.attachEvent('onclick', onAnchorClick);
-      }
+  function onInputBlur(){
+    this['__wookie_committed'] = true;
+    liveUpdate(this, false);
+  }
+
+  function shouldBeLiveChecked(element){
+    if (element.getAttribute('data-commitonly') != null) {
+      return false;
+    }
+
+    if (element.getAttribute('data-waitcommit') != null && !element['__wookie_committed']) {
+      return false;
+    }
+
+    return true;
+  }
+
+  function onInputInput(){
+    if (shouldBeLiveChecked(this)) {
+      liveUpdate(this, false);
     }
   }
 
-  function bindForms(forms){
-    var i,f;
+  function areEqual(a, b){
+    var i;
 
-    for(i = 0;i < forms.length;i++){
-      f = forms[i];
-      if (f.addEventListener) {
-        f.addEventListener('submit', onFormSubmit, false);
-      } else if (f.attachEvent) {
-        f.attachEvent('onsubmit', onFormSubmit);
+    if (a === b) {
+      return true;
+    }
+
+    if (!a || !b) {
+      return false;
+    }
+
+    if (a.length != b.length) {
+      return false;
+    }
+
+    for (i = 0;i < a.length;i++) {
+      if (a[i] !== b[i]) {
+        return false;
       }
     }
+
+    return true;
   }
 
-  function bindSubmitButtons(submitButtons){
-    var i,b;
+  function keys(map){
+    var result = [], i;
+    for (i in map) if(map.hasOwnProperty(i)) {
+      result.push(i);
+    }
 
-    for(i = 0;i < submitButtons.length;i++){
-      b = submitButtons[i];
-      if (b.addEventListener) {
-        b.addEventListener('click', onSubmitButtonClick, false);
-      } else if (b.attachEvent) {
-        b.attachEvent('onclick', onSubmitButtonClick);
+    return result;
+  }
+
+  function dependencies(element){
+    var deps = element.getAttribute('data-dependencies');
+    var i, filtered, dep;
+
+    if (deps == null) {
+      return [];
+    }
+
+    deps = deps.split(/\s+/);
+    filtered = [];
+
+    for (i = 0;i < deps.length;i++){
+      dep = decodeURIComponent(deps[i]);
+      if (dep) {
+        filtered.push(dep);
+      }
+    }
+
+    return filtered;
+  }
+
+  function liveUpdate(element, debounced){
+    var values, debounce, wlMap, vMap, i, j, deps, elem, whitelist, livelist, headers, method, url, body, elements;
+
+    clearTimeout(element['__wookie_debounceTimeout']);
+    delete element['__wookie_debounceTimeout'];
+
+    debounce = element.getAttribute('data-debounce') || (element.form && element.form.getAttribute('data-debounce'));
+    if (debounce && !debounced) {
+      element['__wookie_debounceTimeout'] = setTimeout(liveUpdate, parseInt(debounce, 10), element, true);
+      return;
+    }
+
+    values = getFormElementValues(element);
+    if (element['__wookie_lastChecked'] === element.checked && areEqual(element['__wookie_lastValues'], values)) {
+      return;
+    }
+
+    if (!(element.form && element.name)) {
+      return;
+    }
+
+    element['__wookie_lastChecked'] = element.checked;
+    element['__wookie_lastValues'] = values;
+
+    wlMap = {};
+    vMap = {};
+    elements = [element];
+
+    wlMap[element.name] = true;
+    vMap[element.name] = true;
+    deps = dependencies(element);
+    for (i = 0;i < deps.length;i++) {
+      wlMap[deps[i]] = true;
+    }
+
+    for(i = 0;i < element.form.elements.length;i++){
+      elem = element.form.elements[i];
+      if (elem.getAttribute('data-wk') != null && elem.name && shouldBeLiveChecked(elem)) {
+        deps = dependencies(elem);
+        if (deps.indexOf(element.name) != -1) {
+          if (elements.indexOf(elem) == -1) {
+            elements.push(elem);
+          }
+
+          wlMap[elem.name] = true;
+          vMap[elem.name] = true;
+          for (j = 0;j < deps.length;j++) {
+            wlMap[deps[j]] = true;
+          }
+        }
+      }
+    }
+
+    whitelist = keys(wlMap);
+    livelist = keys(vMap);
+
+    headers = {};
+    headers['X-Live'] = livelist.join(',');
+    getHeaders(element.form, 'data-', '-header', headers);
+    getHeaders(element.form, 'data-', '-liveheader', headers);
+
+    method = element.form.getAttribute('data-livemethod') || element.form.method || 'GET';
+    url = element.form.getAttribute('data-liveaction') || element.form.action || location.href;
+    url = url.replace(/#.*$/, '');
+
+    if (method.toLowerCase() == 'get') {
+      body = null;
+      url = getValues(url, whitelist, element.form);
+    } else {
+      if (!w.FormData) {
+        return;
+      }
+
+      body = getValues(null, whitelist, element.form);
+    }
+
+    loading['trigger'](elements);
+    request({
+      'url': url,
+      'headers': headers,
+      'method': method,
+      'body': body,
+      'asynchronous': element.form.getAttribute('data-async') != null || element.form.getAttribute('data-liveasync') != null
+    })(function(err){
+      loaded['trigger'](elements, err);
+    });
+  }
+
+  function bindElements(elements, event, handler) {
+    var i,e;
+
+    for(i = 0;i < elements.length;i++){
+      e = elements[i];
+      if (e.addEventListener) {
+        e.addEventListener(event, handler, false);
+      } else if (e.attachEvent) {
+        e.attachEvent('on' + event, handler);
       }
     }
   }
@@ -410,11 +549,15 @@ require('jwit');
     var anchors = fragment.querySelectorAll('a[data-wk]');
     var forms = fragment.querySelectorAll('form[data-wk]');
     var submitButtons = fragment.querySelectorAll('input[type=submit], button[type=submit], input[type=image]');
+    var inputs = fragment.querySelectorAll('input[data-wk], textarea[data-wk], select[data-wk]');
     var toRun = fragment.querySelectorAll('[data-wkrun]');
 
-    bindAnchors(anchors);
-    bindForms(forms);
-    bindSubmitButtons(submitButtons);
+    bindElements(anchors, 'click', onAnchorClick);
+    bindElements(forms, 'submit', onFormSubmit);
+    bindElements(submitButtons, 'click', onSubmitButtonClick);
+    bindElements(inputs, 'blur', onInputBlur);
+    bindElements(inputs, 'change', onInputChange);
+    bindElements(inputs, 'input', onInputInput);
     runWitCalls(toRun);
   }
 
