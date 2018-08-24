@@ -219,8 +219,26 @@ require('jwit');
     }
   }
 
+  function getFormElementValues(formElement) {
+    var values, i;
+
+    if (formElement.tagName.toLowerCase() == 'select') {
+      values = [];
+
+      for (i = 0; i < formElement.options.length; i++) {
+          if (formElement.options[i].selected) {
+            values.push(formElement.options[i].value);
+          }
+      }
+
+      return values;
+    }
+
+    return [formElement.value];
+  }
+
   function getValues(baseURL, whitelist, blacklist, form) {
-    var pairs, body, element, i, sep;
+    var pairs, body, element, i, j, sep, values;
 
     if (baseURL) {
       pairs = [];
@@ -249,10 +267,13 @@ require('jwit');
               break;
             }
 
-            if (baseURL) {
-              pairs.push(encodeURIComponent(element.name) + (element.value ? '=' + encodeURIComponent(element.value) : ''));
-            } else {
-              body.append(element.name, element.value);
+            values = getFormElementValues(element);
+            for (j = 0;j < values.length;j++) {
+              if (baseURL) {
+                pairs.push(encodeURIComponent(element.name) + (values[j] ? '=' + encodeURIComponent(values[j]) : ''));
+              } else {
+                body.append(element.name, values[j]);
+              }
             }
 
             break;
