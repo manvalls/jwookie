@@ -285,10 +285,32 @@ require('jwit');
     return body;
   }
 
+  function getFirst(pairs){
+    var i, elem, attr;
+
+    for(i = 0;i < pairs.length;i++){
+      elem = pairs[i][0];
+      attr = pairs[i][1];
+      if (elem && elem.hasAttribute(attr)) {
+        return elem.getAttribute(attr);
+      }
+    }
+
+    return null;
+  }
+
+  function isTrue(attr){
+    return attr != null && attr.toLowerCase() != 'false';
+  }
+
+  function isNotSelf(target){
+    return target && target != '_self';
+  }
+
   function onAnchorClick(e){
     var headers = {};
 
-    if (this.target && this.target != '_self') {
+    if (isNotSelf( getFirst([[this, 'data-target'], [this, 'target']]) )) {
       return;
     }
 
@@ -297,9 +319,9 @@ require('jwit');
 
     loading['trigger'](this);
     request({
-      'url': this.href,
+      'url': getFirst([[this, 'data-href'], [this, 'href']]),
       'headers': headers,
-      'asynchronous': this.getAttribute('data-async') != null
+      'asynchronous': isTrue( this.getAttribute('data-async') )
     })(function(err){
       loaded['trigger'](this, err);
     });
@@ -308,9 +330,14 @@ require('jwit');
   function onFormSubmit(e){
     var headers = {};
     var clickedSubmit = this['__wookie_lastClickedSubmit'];
-    var url, body, method, oldEncoding;
+    var url, body, method, oldEncoding, newEncoding;
 
-    if ((this.target && this.target != '_self') || (clickedSubmit && clickedSubmit.formTarget && clickedSubmit.formTarget != '_self')) {
+    if ( isNotSelf( getFirst([
+      [clickedSubmit, 'data-formtarget'],
+      [clickedSubmit, 'formtarget'],
+      [this, 'data-target'],
+      [this, 'target']
+    ]) ) ) {
       return;
     }
 
@@ -319,8 +346,20 @@ require('jwit');
       getHeaders(clickedSubmit, 'data-', '-header', headers);
     }
 
-    method = (clickedSubmit && clickedSubmit.formMethod) || this.method || 'GET';
-    url = (clickedSubmit && clickedSubmit.formAction) || this.action || location.href;
+    method = getFirst([
+      [clickedSubmit, 'data-formmethod'],
+      [clickedSubmit, 'formmethod'],
+      [this, 'data-method'],
+      [this, 'method']
+    ]) || 'GET';
+
+    url = getFirst([
+      [clickedSubmit, 'data-formaction'],
+      [clickedSubmit, 'formaction'],
+      [this, 'data-action'],
+      [this, 'action']
+    ]) || location.href;
+
     url = url.replace(/#.*$/, '');
 
     if (method.toLowerCase() == 'get') {
@@ -331,14 +370,20 @@ require('jwit');
         return;
       }
 
-      if (clickedSubmit && clickedSubmit.formEncType) {
+      newEncoding = getFirst([
+        [clickedSubmit, 'data-formenctype'],
+        [clickedSubmit, 'formenctype'],
+        [this, 'data-enctype'],
+      ]);
+
+      if (newEncoding != null) {
         oldEncoding = this.encoding;
-        this.encoding = clickedSubmit.formEncType;
+        this.encoding = newEncoding;
       }
 
       body = getValues(null, null, this);
 
-      if (clickedSubmit && clickedSubmit.formEncType) {
+      if (newEncoding != null) {
         this.encoding = oldEncoding;
       }
     }
@@ -351,7 +396,7 @@ require('jwit');
       'headers': headers,
       'method': method,
       'body': body,
-      'asynchronous': this.getAttribute('data-async') != null || (clickedSubmit && clickedSubmit.getAttribute('data-async') != null)
+      'asynchronous': isTrue( getFirst([[clickedSubmit, 'data-async'], [this, 'data-async']]) )
     })(function(err){
       loaded['trigger']([this], err);
     });
@@ -505,8 +550,18 @@ require('jwit');
     getHeaders(element.form, 'data-', '-header', headers);
     getHeaders(element.form, 'data-', '-liveheader', headers);
 
-    method = element.form.getAttribute('data-livemethod') || element.form.method || 'GET';
-    url = element.form.getAttribute('data-liveaction') || element.form.action || location.href;
+    method = getFirst([
+      [element.form, 'data-livemethod'],
+      [element.form, 'data-method'],
+      [element.form, 'method'],
+    ]) || 'GET';
+
+    url = getFirst([
+      [element.form, 'data-liveaction'],
+      [element.form, 'data-action'],
+      [element.form, 'action'],
+    ]) || location.href;
+
     url = url.replace(/#.*$/, '');
 
     if (method.toLowerCase() == 'get') {
@@ -526,7 +581,7 @@ require('jwit');
       'headers': headers,
       'method': method,
       'body': body,
-      'asynchronous': element.form.getAttribute('data-async') != null || element.form.getAttribute('data-liveasync') != null
+      'asynchronous': isTrue( getFirst([[element.form, 'data-liveasync'], [element.form, 'data-async']]) )
     })(function(err){
       loaded['trigger'](elements, err);
     });
