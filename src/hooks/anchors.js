@@ -1,4 +1,5 @@
 import { hook } from 'jwit';
+import request from '../request';
 import { bind, getFirst, isNotSelf, getHeaders, isTrue, getSelector } from '../util';
 
 function onClick(e){

@@ -44,7 +44,7 @@ function request(options){
 
   return function(cb){
     queue(qcb => {
-      var i,j,req,pr,xhr,obj;
+      var i,j,pr,xhr,obj;
 
       cb = cb || function(){};
 
@@ -82,7 +82,7 @@ function request(options){
       uploadHandler(xhr.upload);
 
       xhr.onload = function(){
-        var delta,href,finalUrl;
+        var delta,finalUrl;
 
         cleanup(obj);
 

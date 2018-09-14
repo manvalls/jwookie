@@ -1,5 +1,15 @@
 import { hook } from 'jwit';
-import { bind, getSelector, getFirst, isNotSelf, getHeaders } from '../util';
+
+import {
+  bind,
+  getSelector,
+  getFirst,
+  isNotSelf,
+  getHeaders,
+  isTrue,
+  getValues,
+} from '../util';
+
 import request from '../request';
 
 function onSubmit(e){

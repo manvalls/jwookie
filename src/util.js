@@ -152,7 +152,7 @@ export function getFormElementValues(formElement) {
 }
 
 export function getValues(baseURL, whitelist, form) {
-  var pairs, body, element, i, j, sep, values, v;
+  var pairs, body, element, i, j, values, v;
 
   if (baseURL) {
     pairs = [];
