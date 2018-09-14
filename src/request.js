@@ -113,7 +113,9 @@ function request(options){
             history.pushState({__wookie: true}, '', finalUrl);
           }
 
-          location.hash = fragment;
+          if (fragment) {
+            location.hash = fragment;
+          }
         }
 
         apply(delta)(cb);
