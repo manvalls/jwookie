@@ -90,7 +90,10 @@ if (historyIsSupported()) {
     recordScroll();
   }
 
-  window.addEventListener('hashchange', handleExternalChange, false);
+  window.addEventListener('hashchange', function(){
+    setTimeout(handleExternalChange, 0);
+  }, false);
+
   window.addEventListener('unload', handleExternalChange, false);
   
   replace(location.href);
