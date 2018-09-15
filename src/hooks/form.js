@@ -10,6 +10,7 @@ import {
   getValues,
 } from '../util';
 
+import { historyIsSupported } from '../urlManager';
 import request from '../request';
 
 function onSubmit(e){
@@ -62,6 +63,8 @@ function onSubmit(e){
   })();
 }
 
-hook(getSelector('form'), function(form){
-  bind(form, 'submit', onSubmit);
-});
+if (historyIsSupported()) {
+  hook(getSelector('form'), function (form) {
+    bind(form, 'submit', onSubmit);
+  });
+}

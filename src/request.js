@@ -1,5 +1,6 @@
 import { queue, apply } from 'jwit';
 import getAbsoluteUrl from './getAbsoluteUrl';
+import { push, replace, historyIsSupported } from './urlManager';
 
 const ABORTED = 'Wookie request internally aborted';
 
@@ -70,7 +71,7 @@ function request(options){
           cancel(pr[i]);
         }
 
-        if (!force && fragment && location.href == url) {
+        if (!force && fragment && location.href.replace(/#.*$/, '') == url) {
           qcb();
           return;
         }
@@ -101,24 +102,23 @@ function request(options){
 
         if (
           !asynchronous &&
-          typeof history != 'undefined' &&
-          history.pushState && history.replaceState &&
+          historyIsSupported() &&
           finalUrl != location.href
         ) {
           if (refresh) {
-            let st = history.state || {};
-            st.__wookie = true;
-            history.replaceState(st, '', finalUrl);
+            replace(finalUrl);
           } else {
-            history.pushState({__wookie: true}, '', finalUrl);
-          }
-
-          if (fragment) {
-            location.hash = fragment;
+            push(finalUrl);
           }
         }
 
-        apply(delta)(cb);
+        apply(delta)(function(err){
+          if (fragment) {
+            location.hash = fragment;
+          }
+          
+          cb(err);
+        });
       };
 
       xhr.onerror = function(err){

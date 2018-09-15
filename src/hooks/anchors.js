@@ -1,6 +1,7 @@
 import { hook } from 'jwit';
 import request from '../request';
 import { bind, getFirst, isNotSelf, getHeaders, isTrue, getSelector } from '../util';
+import { historyIsSupported } from '../urlManager';
 
 function onClick(e){
   var headers = {};
@@ -20,6 +21,8 @@ function onClick(e){
   })();
 }
 
-hook(getSelector('a'), function(a){
-  bind(a, 'click', onClick);
-});
+if (historyIsSupported()) {
+  hook(getSelector('a'), function (a) {
+    bind(a, 'click', onClick);
+  });
+}

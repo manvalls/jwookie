@@ -12,6 +12,7 @@ import {
   getValues,
 } from '../util';
 
+import { historyIsSupported } from '../urlManager';
 import request from '../request';
 
 function dependencies(element){
@@ -180,8 +181,10 @@ export function notifyChange(element){
   onInput.call(element)
 }
 
-hook(`${getSelector('input')}, ${getSelector('textarea')}, ${getSelector('select')}`, function(input){
-  bind(input, 'change', onBlur)
-  bind(input, 'blur', onBlur)
-  bind(input, 'input', onInput)
-});
+if (historyIsSupported()) {
+  hook(`${getSelector('input')}, ${getSelector('textarea')}, ${getSelector('select')}`, function (input) {
+    bind(input, 'change', onBlur)
+    bind(input, 'blur', onBlur)
+    bind(input, 'input', onInput)
+  });
+}
