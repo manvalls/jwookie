@@ -5,4 +5,6 @@ import './hooks/submit';
 import './hooks/form';
 import './hooks/input';
 
+import './popstate';
+
 export { commit, notifyChange } from './hooks/input';
