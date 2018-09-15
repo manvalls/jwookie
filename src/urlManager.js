@@ -60,30 +60,41 @@ function scroll(s){
   window.scrollTo(s.left, s.top);
 }
 
+function onPopState(){
+  let s;
+
+  if (history.state && history.state.__wookie && history.state.__wookie != currentStamp){
+    s = getRecordedScroll();
+  }
+  
+  recordScroll();
+  replace(location.href);
+
+  request({
+    refresh: true,
+    headers: { 'X-Refresh': 'true' }
+  })(function(){
+    if (s) {
+      scroll(s);
+    }
+  });
+}
+
 if (historyIsSupported()) {
   if ('scrollRestoration' in history) {
     history.scrollRestoration = 'manual';
   }
-
-  window.addEventListener('popstate', function(){
-    let s;
-
-    if (history.state && history.state.__wookie && history.state.__wookie != currentStamp){
-      s = getRecordedScroll();
-    }
-    
-    recordScroll();
-    replace(location.href);
-
-    request({
-      refresh: true,
-      headers: { 'X-Refresh': 'true' }
-    })(function(){
-      if (s) {
-        scroll(s);
-      }
-    });
-  }, false);
+  
+  if (document.readyState == 'complete') {
+    window.addEventListener('popstate', onPopState, false);
+  } else {
+    window.addEventListener('load', function init(){
+      window.removeEventListener('load', init, false);
+      setTimeout(function(){
+        window.addEventListener('popstate', onPopState, false);
+      }, 0);
+    }, false);
+  }
 
   function handleExternalChange(){
     replace(location.href);
