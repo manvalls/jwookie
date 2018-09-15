@@ -21,7 +21,7 @@
     "prepare:cjs": "rollup -c rollup.cjs.config.js",
     "prepare:esm": "rollup -c rollup.esm.config.js",
     "prepare:min": "rollup -c rollup.min.config.js",
-    "prepare": "run-p prepare:*",
+    "prepare": "npm run lint && run-p prepare:*",
     "lint": "eslint src/**"
   },
   "repository": {
