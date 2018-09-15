@@ -15,7 +15,8 @@ function onClick(e){
   request({
     url: getFirst([[this, 'href']]),
     headers,
-    asynchronous: isTrue( getFirst([[this, 'async']]) )
+    asynchronous: isTrue( getFirst([[this, 'async']]) ),
+    force: isTrue( getFirst([[this, 'force']]) ),
   })();
 }
 

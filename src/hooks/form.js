@@ -57,6 +57,7 @@ function onSubmit(e){
     headers,
     method,
     body,
+    force: isTrue( getFirst([[clickedSubmit, 'force'], [this, 'force']]) ),
     asynchronous: isTrue( getFirst([[clickedSubmit, 'async'], [this, 'async']]) )
   })();
 }

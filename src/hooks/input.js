@@ -161,6 +161,10 @@ function liveUpdate(element, debounced){
     headers,
     method,
     body,
+    force: isTrue( getFirst([
+      [element.form, 'liveforce'],
+      [element.form, 'force'],
+    ]) ),
     asynchronous: isTrue( getFirst([
       [element.form, 'liveasync'],
       [element.form, 'async'],
