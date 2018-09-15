@@ -44,7 +44,7 @@ function onBlur(){
 
 function onInput(){
   if (
-    !isTrue(getFirst([[this, 'commitonly']])) &&
+    !isTrue(getFirst([[this, 'commitonly'], [this.form, 'commitonly']])) &&
     shouldBeLiveChecked(this)
   ) {
     liveUpdate(this, false);
@@ -71,8 +71,8 @@ function shouldBeLiveChecked(element){
   if (
     !element.__wookie_committed &&
     (
-      isTrue(getFirst([[element, 'waitcommit']])) ||
-      isTrue(getFirst([[element, 'commitonly']]))
+      isTrue(getFirst([[element, 'waitcommit'], [element.form, 'waitcommit']])) ||
+      isTrue(getFirst([[element, 'commitonly'], [element.form, 'commitonly']]))
     )
   ) {
     return false;
