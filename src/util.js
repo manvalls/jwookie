@@ -8,7 +8,7 @@ export function isNotSelf(target){
   return target && target != '_self';
 }
 
-const prefixes = ['w-', 'x-', 'data-', ''];
+const prefixes = ['w-', 'data-', ''];
 
 export function getFirst(pairs){
   var i, j, elem, attr, prefixedAttr;
