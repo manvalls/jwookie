@@ -52,6 +52,14 @@ function onSubmit(e){
   }
 
   e.preventDefault();
+  if (!isTrue(getFirst([
+    [clickedSubmit, 'nodebounce'],
+    [this, 'nodebounce']
+  ])) && this.__wookie_waiting) {
+    return;
+  }
+
+  this.__wookie_waiting = true;
 
   request({
     url,
@@ -60,7 +68,9 @@ function onSubmit(e){
     body,
     force: isTrue( getFirst([[clickedSubmit, 'force'], [this, 'force']]) ),
     asynchronous: isTrue( getFirst([[clickedSubmit, 'async'], [this, 'async']]) )
-  })();
+  })(err => {
+    delete this.__wookie_waiting;
+  });
 }
 
 if (historyIsSupported()) {

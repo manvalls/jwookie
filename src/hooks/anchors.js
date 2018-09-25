@@ -11,6 +11,12 @@ function onClick(e){
   }
 
   e.preventDefault();
+
+  if (!isTrue( getFirst([[this, 'nodebounce']]) ) && this.__wookie_waiting) {
+    return;
+  }
+
+  this.__wookie_waiting = true;
   getHeaders(this, '-header', headers);
 
   request({
@@ -18,7 +24,9 @@ function onClick(e){
     headers,
     asynchronous: isTrue( getFirst([[this, 'async']]) ),
     force: isTrue( getFirst([[this, 'force']]) ),
-  })();
+  })(err => {
+    delete this.__wookie_waiting;
+  });
 }
 
 if (historyIsSupported()) {
