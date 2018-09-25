@@ -68,7 +68,7 @@ function onSubmit(e){
     body,
     force: isTrue( getFirst([[clickedSubmit, 'force'], [this, 'force']]) ),
     asynchronous: isTrue( getFirst([[clickedSubmit, 'async'], [this, 'async']]) )
-  })(err => {
+  })(() => {
     delete this.__wookie_waiting;
   });
 }

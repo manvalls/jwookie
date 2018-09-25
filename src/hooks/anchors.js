@@ -24,7 +24,7 @@ function onClick(e){
     headers,
     asynchronous: isTrue( getFirst([[this, 'async']]) ),
     force: isTrue( getFirst([[this, 'force']]) ),
-  })(err => {
+  })(() => {
     delete this.__wookie_waiting;
   });
 }
