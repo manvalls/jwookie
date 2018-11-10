@@ -1,13 +1,49 @@
-import { queue, apply } from 'jwit';
+import { queue, apply, getEventTrigger } from 'jwit';
 import getAbsoluteUrl from './getAbsoluteUrl';
 import { push, replace, historyIsSupported } from './urlManager';
+
+import {
+  loading,
+  loadingCapture,
+  load,
+  loadCapture,
+  error,
+  errorCapture,
+  aborted,
+  abortedCapture,
+  uploadProgress,
+  uploadProgressCapture,
+  downloadProgress,
+  downloadProgressCapture,
+} from './events';
 
 const ABORTED = 'Wookie request internally aborted';
 
 var pendingRequests = [];
 
-export function aborted(err){
+export function isAborted(err){
   return err && err.message == ABORTED;
+}
+
+function getTrigger(node, event, global, globalCapture, baseData){
+  const trigger = getEventTrigger(node, event);
+
+  return (datas, cb) => trigger([
+      e => {
+        datas = datas.concat(baseData)
+        for (let i = 0;i < datas.length;i++) {
+          const data = datas[i];
+          for (let key in data) if (data.hasOwnProperty(key)){
+            e[key] = data[key];
+          }
+        }
+      },
+      e => globalCapture.trigger(e),
+    ], [
+      e => global.trigger(e),
+      cb || (() => {}),
+    ]
+  );
 }
 
 function cleanup(obj){
@@ -25,7 +61,7 @@ function cancel(obj){
 }
 
 function request(options){
-  var url, fragment, force, method, headers, body, uploadHandler, asynchronous, refresh, key;
+  var url, fragment, force, method, headers, body, asynchronous, refresh, key, target;
 
   options = options || {};
 
@@ -33,19 +69,22 @@ function request(options){
   fragment = (url.match(/#.*$/) || [''])[0];
   url = url.replace(/#.*$/, '');
   url = getAbsoluteUrl(url);
-
+  
   method = options.method || 'GET';
   headers = options.headers || {};
   body = options.body || null;
-  uploadHandler = options.uploadHandler || function(){};
   asynchronous = options.asynchronous || false;
   refresh = options.refresh || false;
   force = options.force || false;
   key = options.key || {};
+  target = options.target || null;
 
   return function(cb){
     queue(qcb => {
       var i,j,pr,xhr,obj;
+
+      const baseEventData = { url, force, method, headers, body, asynchronous, refresh, key, target };
+      const abortedTrigger = getTrigger(target, 'Aborted', aborted, abortedCapture, baseEventData);
 
       cb = cb || function(){};
 
@@ -54,7 +93,10 @@ function request(options){
         for (i = 0;i < pr.length;i++) {
           obj = pr[i];
           if (!obj.asynchronous) {
-            setTimeout(cb, 0, new Error(ABORTED));
+            setTimeout(() => {
+              const error = new Error(ABORTED);
+              abortedTrigger([{ error }], e => cb(error, e));
+            }, 0);
             qcb();
             return;
           }
@@ -77,10 +119,25 @@ function request(options){
         }
       }
 
+      const loadingTrigger = getTrigger(target, 'Loading', loading, loadingCapture, baseEventData);
+      const loadTrigger = getTrigger(target, 'Load', load, loadCapture, baseEventData);
+      const errorTrigger = getTrigger(target, 'Error', error, errorCapture, baseEventData);
+      const uploadProgressTrigger = getTrigger(target, 'UploadProgress', uploadProgress, uploadProgressCapture, baseEventData);
+      const downloadProgressTrigger = getTrigger(target, 'DownloadProgress', downloadProgress, downloadProgressCapture, baseEventData);
+
       xhr = new XMLHttpRequest();
-      obj = {xhr: xhr, asynchronous: asynchronous, key: key};
+      obj = { xhr, asynchronous, key };
       pendingRequests.push(obj);
-      uploadHandler(xhr.upload);
+
+      xhr.onprogress = function({ loaded, total }){
+        downloadProgressTrigger([{ loaded, total }]);
+      };
+
+      if(xhr.upload){
+        xhr.upload.onprogress = function({ loaded, total }){
+          uploadProgressTrigger([{ loaded, total }]);
+        };
+      }
 
       xhr.onload = function(){
         var delta,finalUrl;
@@ -89,8 +146,8 @@ function request(options){
 
         try{
           delta = JSON.parse(xhr.responseText);
-        }catch(err){
-          return cb(err);
+        }catch(error){
+          return errorTrigger([{ error }], e => cb(error, e));
         }
 
         finalUrl = xhr.responseURL || xhr.getResponseHeader('X-Response-Url') || url;
@@ -112,18 +169,30 @@ function request(options){
           }
         }
 
-        apply(delta)(function(err){
+        apply(delta)(function(error){
           if (fragment) {
             location.hash = fragment;
           }
           
-          cb(err);
+          if(error){
+            errorTrigger([{ error }], e => cb(error, e));
+          } else {
+            loadTrigger([], e => cb(undefined, e));
+          }
         });
       };
 
-      xhr.onerror = function(err){
+      xhr.onerror = function(error){
         cleanup(obj);
-        cb(err);
+
+        if (isAborted(error)) {
+          abortedTrigger([{ error }], e => cb(error, e));
+        } else {
+          const { defaultPrevented } = errorTrigger([{ error }], e => cb(error, e));
+          if (!defaultPrevented) {
+            location.href = url;
+          }
+        }
       };
 
       xhr.open(method, url, true);
@@ -145,6 +214,7 @@ function request(options){
       }
 
       xhr.send(body);
+      loadingTrigger([]);
       qcb();
     });
   };
