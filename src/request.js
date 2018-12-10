@@ -125,6 +125,19 @@ function request(options){
       const uploadProgressTrigger = getTrigger(target, 'UploadProgress', uploadProgress, uploadProgressCapture, baseEventData);
       const downloadProgressTrigger = getTrigger(target, 'DownloadProgress', downloadProgress, downloadProgressCapture, baseEventData);
 
+      function handleError(error){
+        let reloadPrevented = false;
+
+        function preventReload(){
+          reloadPrevented = true;
+        }
+
+        errorTrigger([{ error, preventReload }], e => cb(error, e));
+        if (!reloadPrevented) {
+          location.href = url;
+        }
+      }
+
       xhr = new XMLHttpRequest();
       obj = { xhr, asynchronous, key };
       pendingRequests.push(obj);
@@ -147,7 +160,8 @@ function request(options){
         try{
           delta = JSON.parse(xhr.responseText);
         }catch(error){
-          return errorTrigger([{ error }], e => cb(error, e));
+          handleError(error);
+          return;
         }
 
         finalUrl = xhr.responseURL || xhr.getResponseHeader('X-Response-Url') || url;
@@ -175,7 +189,7 @@ function request(options){
           }
           
           if(error){
-            errorTrigger([{ error }], e => cb(error, e));
+            handleError(error);
           } else {
             loadTrigger([], e => cb(undefined, e));
           }
@@ -188,10 +202,7 @@ function request(options){
         if (isAborted(error)) {
           abortedTrigger([{ error }], e => cb(error, e));
         } else {
-          const { defaultPrevented } = errorTrigger([{ error }], e => cb(error, e));
-          if (!defaultPrevented) {
-            location.href = url;
-          }
+          handleError(error);
         }
       };
 
