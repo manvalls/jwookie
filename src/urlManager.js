@@ -45,18 +45,16 @@ function getStamp(){
 }
 
 function getRecordedScroll(){
-  let s;
-
   try {
-    s = JSON.parse(session['__wookie_' + history.state.__wookie] || '{"top":0,"left":0}');
-  } catch(err) {
-    s = { top: 0, left: 0 };
-  }
-
-  return s;
+    return JSON.parse(session['__wookie_' + history.state.__wookie]);
+  } catch(err) { }
 }
 
 function scroll(s){
+  if (!s) {
+    return;
+  }
+  
   window.scrollTo(s.left, s.top);
 }
 
