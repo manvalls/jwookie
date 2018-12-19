@@ -4,7 +4,7 @@ import './hooks/submit';
 import './hooks/form';
 import './hooks/input';
 
-export { default as request, isAborted } from './request';
+export { default as request, isAborted, abort } from './request';
 export { commit, notifyChange } from './hooks/input';
 
 export {
