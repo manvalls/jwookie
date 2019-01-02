@@ -11,7 +11,7 @@ import {
 } from '../util';
 
 import { historyIsSupported } from '../urlManager';
-import request from '../request';
+import navigate from '../navigate';
 
 function onSubmit(e){
   var headers = {};
@@ -61,15 +61,14 @@ function onSubmit(e){
 
   this.__wookie_waiting = true;
 
-  request({
+  navigate({
     url,
     headers,
     method,
     body,
-    force: isTrue( getFirst([[clickedSubmit, 'force'], [this, 'force']]) ),
-    asynchronous: isTrue( getFirst([[clickedSubmit, 'async'], [this, 'async']]) )
-  })(() => {
-    delete this.__wookie_waiting;
+    postDone: () => {
+      delete this.__wookie_waiting;
+    },
   });
 }
 

@@ -4,7 +4,8 @@ import './hooks/submit';
 import './hooks/form';
 import './hooks/input';
 
-export { default as request, isAborted } from './request';
+export { default as navigate, abortNavigation } from './navigate';
+export { default as applyURL } from './applyURL';
 export { commit, notifyChange } from './hooks/input';
 
 export {
@@ -14,10 +15,14 @@ export {
   loadCapture,
   error,
   errorCapture,
-  aborted,
-  abortedCapture,
+  abort,
+  abortCapture,
   uploadProgress,
   uploadProgressCapture,
   downloadProgress,
   downloadProgressCapture,
+  response,
+  responseCapture,
+  done,
+  doneCapture,
 } from './events';

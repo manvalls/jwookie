@@ -13,7 +13,8 @@ import {
 } from '../util';
 
 import { historyIsSupported } from '../urlManager';
-import request from '../request';
+import navigate from '../navigate';
+import applyURL from '../applyURL';
 
 function dependencies(element){
   var deps = getFirst([[element, 'deps']]);
@@ -157,20 +158,24 @@ function liveUpdate(element, debounced){
     body = getValues(null, keys(toInclude), element.form);
   }
 
-  request({
+  if (element.__wookie_cancelLast) {
+    element.__wookie_cancelLast();
+  }
+
+  let request = applyURL;
+  if (isTrue( getFirst([[element.form, 'liveurl']]) )) {
+    request = navigate;
+  }
+  
+  element.__wookie_cancelLast = request({
     url,
     headers,
     method,
     body,
-    force: isTrue( getFirst([
-      [element.form, 'liveforce'],
-      [element.form, 'force'],
-    ]) ),
-    asynchronous: isTrue( getFirst([
-      [element.form, 'liveasync'],
-      [element.form, 'async'],
-    ]) )
-  })();
+    postDone: () => {
+      delete element.__wookie_cancelLast;
+    },
+  });
 }
 
 export function commit(element){
@@ -183,8 +188,16 @@ export function notifyChange(element){
 
 if (historyIsSupported()) {
   hook(`${getSelector('input')}, ${getSelector('textarea')}, ${getSelector('select')}`, function (input) {
-    bind(input, 'change', onBlur)
-    bind(input, 'blur', onBlur)
-    bind(input, 'input', onInput)
+    bind(input, 'change', onBlur);
+    bind(input, 'blur', onBlur);
+    bind(input, 'input', onInput);
+
+    return {
+      destroy: () => {
+        if (input.__wookie_cancelLast) {
+          input.__wookie_cancelLast();
+        }
+      },
+    };
   });
 }

@@ -1,5 +1,5 @@
 import { queue } from 'jwit';
-import request from './request';
+import navigate from './navigate';
 
 let session;
 
@@ -68,13 +68,21 @@ function onPopState(){
   recordScroll();
   replace(location.href);
 
-  request({
-    refresh: true,
-    headers: { 'X-Refresh': 'true' }
-  })(function(){
-    if (s) {
-      scroll(s);
-    }
+  let scrollPrevented = false;
+
+  navigate({
+    replace: true,
+    headers: { 'X-Popstate': 'true' },
+    captureLoad: e => {
+      e.preventScroll = () => {
+        scrollPrevented = true;
+      };
+    },
+    postLoad: () => {
+      if (!scrollPrevented) {
+        scroll(s);
+      }
+    },
   });
 }
 

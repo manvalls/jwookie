@@ -1,5 +1,6 @@
 import { hook } from 'jwit';
-import request from '../request';
+import getAbsoluteUrl from '../getAbsoluteUrl';
+import navigate from '../navigate';
 import { bind, getFirst, isNotSelf, getHeaders, isTrue, getSelector } from '../util';
 import { historyIsSupported } from '../urlManager';
 
@@ -7,6 +8,17 @@ function onClick(e){
   var headers = {};
 
   if (isNotSelf( getFirst([[this, 'target']]) )) {
+    return;
+  }
+
+  const url = getFirst([[this, 'href']]);
+
+  if (
+    url &&
+    !isTrue( getFirst([[this, 'force']]) ) &&
+    url.match(/#.*$/) &&
+    location.href.replace(/#.*$/, '') == getAbsoluteUrl(url).replace(/#.*$/, '')
+  ) {
     return;
   }
 
@@ -19,13 +31,12 @@ function onClick(e){
   this.__wookie_waiting = true;
   getHeaders(this, '-header', headers);
 
-  request({
-    url: getFirst([[this, 'href']]),
+  navigate({
+    url,
     headers,
-    asynchronous: isTrue( getFirst([[this, 'async']]) ),
-    force: isTrue( getFirst([[this, 'force']]) ),
-  })(() => {
-    delete this.__wookie_waiting;
+    postDone: () => {
+      delete this.__wookie_waiting;
+    },
   });
 }
 

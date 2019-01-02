@@ -201,3 +201,27 @@ export function getValues(baseURL, whitelist, form) {
 
   return body;
 }
+
+export function assign(base){
+  for(let i = 1;i < arguments.length;i++){
+    const a = arguments[i];
+    for (let key in a) if(a.hasOwnProperty(key)){
+      base[key] = a[key];
+    }
+  }
+
+  return base;
+}
+
+export function dedupe(array){
+  const result = [];
+
+  for(let i = 0;i < array.length;i++){
+    const elem = array[i];
+    if(result.indexOf(elem) == -1){
+      result.push(elem);
+    }
+  }
+
+  return result;
+}
