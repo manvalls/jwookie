@@ -22,6 +22,8 @@ function navigate(options){
     }, options.headers || {}),
 
     captureResponse: e => {
+      responseURL = e.responseURL;
+      
       e.preventURLChange = () => {
         URLChangePrevented = true;
       };
@@ -31,7 +33,7 @@ function navigate(options){
       }
     },
 
-    postResponse: ({ responseURL }) => {
+    postResponse: () => {
       if(
         !URLChangePrevented &&
         historyIsSupported() &&

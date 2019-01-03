@@ -111,11 +111,10 @@ function applyURL(options){
       xhr.onload = function(){
         var delta,responseURL;
         
-        xhr = null;
-
         try{
           delta = JSON.parse(xhr.responseText);
         }catch(error){
+          xhr = null;
           errorTrigger({ error });
           doneTrigger({ error });
           return;
@@ -126,6 +125,7 @@ function applyURL(options){
           responseURL += fragment;
         }
   
+        xhr = null;
         responseURL = getAbsoluteUrl(responseURL);
         responseTrigger({ responseURL });
   

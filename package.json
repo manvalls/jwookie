@@ -5,7 +5,7 @@
   "main": "./dist/wookie.cjs.js",
   "module": "./dist/wookie.esm.js",
   "dependencies": {
-    "jwit": "^6.0.0"
+    "jwit": "^6.1.0"
   },
   "devDependencies": {
     "@babel/core": "^7.0.0",
