@@ -18,6 +18,7 @@ import {
   response,
   responseCapture,
   doneCapture,
+  done,
 } from './events';
 
 function applyURL(options){
@@ -42,7 +43,7 @@ function applyURL(options){
   const baseEventData = { url, method, headers, body, target, requestId };
 
   function getTrigger(event, global, globalCapture){
-    const trigger = getEventTrigger(node, event);
+    const trigger = getEventTrigger(target, event);
   
     return (data) => {
       trigger([
@@ -92,7 +93,7 @@ function applyURL(options){
   let xhr;
 
   const unqueue = queue(qcb => {
-    var i,j;
+    var i;
 
     try {
       xhr = new XMLHttpRequest();

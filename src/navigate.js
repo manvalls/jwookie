@@ -1,6 +1,5 @@
 import applyURL from './applyURL';
-import { assign } from './utils';
-import getAbsoluteUrl from './getAbsoluteUrl';
+import { assign } from './util';
 import { push, replace, historyIsSupported } from './urlManager';
 
 let cancelLastRequest;
