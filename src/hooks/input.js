@@ -1,4 +1,4 @@
-import { hook } from 'jwit';
+import { hook, wrapFactory } from 'jwit';
 
 import {
   bind,
@@ -186,18 +186,23 @@ export function notifyChange(element){
   onInput.call(element)
 }
 
-if (historyIsSupported()) {
-  hook(`${getSelector('input')}, ${getSelector('textarea')}, ${getSelector('select')}`, function (input) {
-    bind(input, 'change', onBlur);
-    bind(input, 'blur', onBlur);
-    bind(input, 'input', onInput);
+export default wrapFactory(() => {
+  if (historyIsSupported()) {
+    return [hook(`${getSelector('input')}, ${getSelector('textarea')}, ${getSelector('select')}`, function (input) {
+      bind(input, 'change', onBlur);
+      bind(input, 'blur', onBlur);
+      bind(input, 'input', onInput);
+  
+      return {
+        destroy: () => {
+          if (input.__wookie_cancelLast) {
+            input.__wookie_cancelLast();
+          }
+        },
+      };
+    })];
+  }
 
-    return {
-      destroy: () => {
-        if (input.__wookie_cancelLast) {
-          input.__wookie_cancelLast();
-        }
-      },
-    };
-  });
-}
+  return [];
+});
+

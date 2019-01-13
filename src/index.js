@@ -1,8 +1,10 @@
-import './hooks/scroll';
-import './hooks/anchors';
-import './hooks/submit';
-import './hooks/form';
-import './hooks/input';
+export { default as hookScroll } from './hooks/scroll';
+export { default as hookAnchors } from './hooks/anchors';
+export { default as hookSubmits } from './hooks/submit';
+export { default as hookForms } from './hooks/form';
+export { default as hookInputs } from './hooks/input';
+export { default as hookNavigation } from './hooks/navigation';
+export { default as init } from './hooks/init';
 
 export { default as navigate, abortNavigation } from './navigate';
 export { default as applyURL } from './applyURL';

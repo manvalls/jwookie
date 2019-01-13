@@ -4,6 +4,7 @@
   "description": "",
   "main": "./dist/wookie.cjs.js",
   "module": "./dist/wookie.esm.js",
+  "sideEffects": false,
   "dependencies": {
     "jwit": "^7.0.0"
   },

@@ -1,4 +1,4 @@
-import { hook } from 'jwit';
+import { hook, wrapFactory } from 'jwit';
 
 import {
   bind,
@@ -72,8 +72,12 @@ function onSubmit(e){
   });
 }
 
-if (historyIsSupported()) {
-  hook(getSelector('form'), function (form) {
-    bind(form, 'submit', onSubmit);
-  });
-}
+export default wrapFactory(() => {
+  if (historyIsSupported()) {
+    return [hook(getSelector('form'), function (form) {
+      bind(form, 'submit', onSubmit);
+    })];
+  }
+
+  return [];
+});

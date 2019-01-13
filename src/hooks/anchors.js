@@ -1,4 +1,4 @@
-import { hook } from 'jwit';
+import { hook, wrapFactory } from 'jwit';
 import getAbsoluteUrl from '../getAbsoluteUrl';
 import navigate from '../navigate';
 import { bind, getFirst, isNotSelf, getHeaders, isTrue, getSelector } from '../util';
@@ -40,8 +40,12 @@ function onClick(e){
   });
 }
 
-if (historyIsSupported()) {
-  hook(getSelector('a'), function (a) {
-    bind(a, 'click', onClick);
-  });
-}
+export default wrapFactory(() => {
+  if (historyIsSupported()) {
+    return [hook(getSelector('a'), function (a) {
+      bind(a, 'click', onClick);
+    })];
+  }
+
+  return [];
+});
