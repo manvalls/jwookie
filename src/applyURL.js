@@ -150,6 +150,7 @@ function applyURL(options){
 
       computedHeaders['Accept'] = 'application/json';
       computedHeaders['X-Request-ID'] = requestId;
+      computedHeaders['X-Requested-With'] = 'XMLHttpRequest';
   
       if (typeof SPH !== 'undefined') {
         const addHeaders = (SPH) => {
