@@ -154,7 +154,7 @@ function applyURL(options){
   
       if (typeof SPH !== 'undefined') {
         const addHeaders = (SPH) => {
-          for (i in SPH) if(SPH.hasOwnProperty(i)) {
+          for (i in SPH) if(SPH.hasOwnProperty(i) && SPH[i] != null) {
             if (typeof SPH[i] == 'string') {
               computedHeaders[i] = SPH[i];
             } else if (SPH[i] instanceof Array) {
