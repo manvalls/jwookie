@@ -154,12 +154,22 @@ function applyURL(options){
   
       if (typeof SPH !== 'undefined') {
         const addHeaders = (SPH) => {
+          var i,j;
+
           for (i in SPH) if(SPH.hasOwnProperty(i) && SPH[i] != null) {
             if (typeof SPH[i] == 'string') {
               computedHeaders[i] = SPH[i];
             } else if (SPH[i] instanceof Array) {
               SPH[i] = dedupe(SPH[i]);
               computedHeaders[i] = SPH[i].join(', ');
+            } else if (SPH[i].hasOwnProperty('_map') && SPH[i]._map === true) {
+              const pairs = [];
+              for (j in SPH[i]) if(j.indexOf('_') != 0 && SPH[i].hasOwnProperty(j)) {
+                const v = String(SPH[i][j])
+                pairs.push(encodeURIComponent(j) + (v ? '=' + encodeURIComponent(v) : ''))
+              }
+
+              computedHeaders[i] = pairs.join('&');
             } else {
               addHeaders(SPH[i]);
             }
