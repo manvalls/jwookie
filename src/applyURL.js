@@ -1,6 +1,9 @@
-import { queue, apply, getEventTrigger } from 'jwit';
+import { queue, getEventTrigger } from 'jwit';
 import getAbsoluteUrl from './getAbsoluteUrl';
-import { assign, dedupe } from './util';
+import { assign, dedupe, toQuery } from './util';
+
+import xhrTransport from './transports/xhr'
+import wsTransport from './transports/ws'
 
 import {
   loading,
@@ -22,7 +25,7 @@ import {
 } from './events';
 
 function applyURL(options){
-  var url, fragment, method, headers, body, target;
+  var url, wsUrl, wsEvents, fragment, method, headers, body, target;
 
   options = options || {};
 
@@ -35,12 +38,18 @@ function applyURL(options){
   headers = options.headers || {};
   body = options.body || null;
   target = options.target || null;
+  wsEvents = options.wsEvents || null;
+
+  wsUrl = options.wsUrl || null;
+  if (wsUrl) {
+    wsUrl = getAbsoluteUrl(wsUrl).replace(/^http/, 'ws')
+  }
 
   const requestId = Math.random().toString(36).slice(-10) +
                     Math.random().toString(36).slice(-10) +
                     Date.now().toString(36);
   
-  const baseEventData = { url, method, headers, body, target, requestId };
+  const baseEventData = { url, wsUrl, method, headers, body, target, requestId };
 
   function getTrigger(event, global, globalCapture){
     const trigger = getEventTrigger(target, event);
@@ -90,86 +99,30 @@ function applyURL(options){
   const uploadProgressTrigger = getTrigger('UploadProgress', uploadProgress, uploadProgressCapture);
   const downloadProgressTrigger = getTrigger('DownloadProgress', downloadProgress, downloadProgressCapture);
   
-  let xhr;
+  let abortReq;
 
   const unqueue = queue(qcb => {
     var i;
 
     try {
-      xhr = new XMLHttpRequest();
-
-      xhr.onprogress = function({ loaded, total }){
-        downloadProgressTrigger({ loaded, total });
-      };
-  
-      if(xhr.upload){
-        xhr.upload.onprogress = function({ loaded, total }){
-          uploadProgressTrigger({ loaded, total });
-        };
-      }
-  
-      xhr.onload = function(){
-        var delta,responseURL;
-        
-        try{
-          delta = JSON.parse(xhr.responseText);
-        }catch(error){
-          xhr = null;
-          errorTrigger({ error });
-          doneTrigger({ error });
-          return;
-        }
-  
-        responseURL = xhr.responseURL || xhr.getResponseHeader('X-Response-Url') || url;
-        if (responseURL.indexOf('#') == -1) {
-          responseURL += fragment;
-        }
-  
-        xhr = null;
-        responseURL = getAbsoluteUrl(responseURL);
-        responseTrigger({ responseURL });
-  
-        apply(delta)(function(error){
-          if(error){
-            errorTrigger({ error, responseURL });
-            doneTrigger({ error, responseURL });
-          } else {
-            loadTrigger({ responseURL });
-            doneTrigger({ responseURL });
-          }
-        });
-      };
-  
-      xhr.onerror = function(error){
-        xhr = null;
-        errorTrigger({ error });
-        doneTrigger({ error });
-      };
-      
       const computedHeaders = {};
 
-      computedHeaders['Accept'] = 'application/json';
-      computedHeaders['X-Request-ID'] = requestId;
-      computedHeaders['X-Requested-With'] = 'XMLHttpRequest';
+      computedHeaders['accept'] = 'application/json';
+      computedHeaders['x-request-id'] = requestId;
+      computedHeaders['x-requested-with'] = 'XMLHttpRequest';
   
       if (typeof SPH !== 'undefined') {
         const addHeaders = (SPH) => {
-          var i,j;
+          var i;
 
           for (i in SPH) if(SPH.hasOwnProperty(i) && SPH[i] != null) {
             if (typeof SPH[i] == 'string') {
-              computedHeaders[i] = SPH[i];
+              computedHeaders[i.toLowerCase()] = SPH[i];
             } else if (SPH[i] instanceof Array) {
               SPH[i] = dedupe(SPH[i]);
-              computedHeaders[i] = SPH[i].join(', ');
+              computedHeaders[i.toLowerCase()] = SPH[i].join(', ');
             } else if (SPH[i].hasOwnProperty('_map') && SPH[i]._map === true) {
-              const pairs = [];
-              for (j in SPH[i]) if(j.indexOf('_') != 0 && SPH[i].hasOwnProperty(j)) {
-                const v = String(SPH[i][j])
-                pairs.push(encodeURIComponent(j) + (v ? '=' + encodeURIComponent(v) : ''))
-              }
-
-              computedHeaders[i] = pairs.join('&');
+              computedHeaders[i.toLowerCase()] = toQuery(SPH[i]);
             } else {
               addHeaders(SPH[i]);
             }
@@ -183,14 +136,39 @@ function applyURL(options){
         computedHeaders[i] = headers[i];
       }
 
-      xhr.open(method, url, true);
-  
-      for (i in computedHeaders) if(computedHeaders.hasOwnProperty(i)) {
-        xhr.setRequestHeader(i, computedHeaders[i]);
-      }
-
-      xhr.send(body);
       loadingTrigger({});
+
+      if (wsUrl) {
+        abortReq = wsTransport({
+          downloadProgressTrigger,
+          uploadProgressTrigger,
+          errorTrigger,
+          doneTrigger,
+          loadTrigger,
+          responseTrigger,
+          method,
+          url,
+          wsUrl,
+          wsEvents,
+          headers: computedHeaders,
+          body,
+          fragment,
+        });
+      } else {
+        abortReq = xhrTransport({
+          downloadProgressTrigger,
+          uploadProgressTrigger,
+          errorTrigger,
+          doneTrigger,
+          loadTrigger,
+          responseTrigger,
+          method,
+          url,
+          headers: computedHeaders,
+          body,
+          fragment,
+        });
+      }
     } catch(error) {
       errorTrigger({ error });
       doneTrigger({ error });
@@ -199,20 +177,19 @@ function applyURL(options){
     qcb();
   });
 
-  let isAbort = false;
+  let isAborted = false;
 
   return () => {
-    if (isAbort) {
+    if (isAborted) {
       return;
     }
 
-    isAbort = true;
+    isAborted = true;
     unqueue();
 
-    if (xhr) {
-      xhr.onload = xhr.onerror = null;
-      xhr.abort();
-      xhr = null;
+    if (abortReq) {
+      abortReq();
+      abortReq = null;
     }
 
     abortTrigger({});

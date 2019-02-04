@@ -76,6 +76,8 @@ export function getHeaders(node, suffix, headers) {
       }
     }
   }
+
+  return headers;
 }
 
 export function bind(element, event, handler) {
@@ -92,6 +94,17 @@ export function getSelector(selector){
 
   for (i = 0;i < prefixes.length;i++) {
     selectors.push(`${selector}[${prefixes[i]}wk]`);
+  }
+
+  return selectors.join(', ');
+}
+
+export function getAttr(attr){
+  const selectors = [];
+  var i;
+
+  for (i = 0;i < prefixes.length;i++) {
+    selectors.push(`[${prefixes[i]}${attr}]`);
   }
 
   return selectors.join(', ');
@@ -224,4 +237,19 @@ export function dedupe(array){
   }
 
   return result;
+}
+
+export function toQuery(context){
+  const attrs = [];
+
+  for(let key in context) if(key.indexOf('_') != 0 && context.hasOwnProperty(key)) {
+    const values = context[key] instanceof Array ? context[key] : [context[key]];
+
+    for(let i = 0;i < values.length;i++) {
+      const value = values[i];
+      attrs.push(encodeURIComponent(key) + (value ? '=' + encodeURIComponent(value) : ''));
+    }
+  }
+
+  return attrs.join('&');
 }
