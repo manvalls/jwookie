@@ -262,6 +262,18 @@ function makeRequest(context, socket){
   request += `Origin: ${origin(url)}\r\n`;
   request += `Host: ${origin(url).replace(/^[a-z]+\:\/\//, '')}\r\n`;
 
+  const langs = (navigator.languages || [navigator.userLanguage || navigator.language]).filter(e => !!e);
+
+  if (langs.length) {
+    request += `Accept-Language: ${langs.map((lang, i) => {
+      if (i == 0) {
+        return lang;
+      }
+      
+      return lang + ';q=' + ((navigator.languages.length - i) / navigator.languages.length).toFixed(3).replace(/0+$/,'');
+    }).join(',')}\r\n`;
+  }
+
   if (cookiesAllowed) {
     request += `Cookie: ${document.cookie}\r\n`
   }
