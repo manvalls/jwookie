@@ -10,7 +10,7 @@ export default wrapFactory(() => {
   }
 
   return [
-    hook(getAttr('wsub'), function(node){
+    hook(getAttr('sub'), function(node){
       const subscription = getFirst([[node, 'wsub']]);
       let destroy;
 
