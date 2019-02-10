@@ -11,21 +11,21 @@ export default wrapFactory(() => {
 
   return [
     hook(getAttr('sub'), function(node){
-      const subscription = getFirst([[node, 'wsub']]);
+      const subscription = getFirst([[node, 'sub']]);
       let destroy;
 
       const subscribe = () => {
         destroy = applyURL({
-          wsUrl: getFirst([[node, 'wsub-url']]) || window.wsubURL || '/witsub',
+          wsUrl: getFirst([[node, 'sub-url']]) || window.wsubURL || '/witsub',
           target: node,
-          headers: getHeaders(node, '-wsub-header', { 'X-Wok-Call': subscription }),
+          headers: getHeaders(node, '-sub-header', { 'X-Wok-Call': subscription }),
           onError: () => {
-            if(getFirst([[node, 'wsub-retry']]) != 'never'){
+            if(getFirst([[node, 'sub-retry']]) != 'never'){
               setTimeout(subscribe, RETRY_TIMEOUT);
             }
           },
           onLoad: () => {
-            if(getFirst([[node, 'wsub-retry']]) == 'always'){
+            if(getFirst([[node, 'sub-retry']]) == 'always'){
               setTimeout(subscribe, RETRY_TIMEOUT);
             }
           },
