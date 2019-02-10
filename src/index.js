@@ -4,6 +4,7 @@ export { default as hookSubmits } from './hooks/submit';
 export { default as hookForms } from './hooks/form';
 export { default as hookInputs } from './hooks/input';
 export { default as hookNavigation } from './hooks/navigation';
+export { default as hookRm } from './hooks/rm';
 export { default as init } from './hooks/init';
 
 export { default as navigate, abortNavigation } from './navigate';

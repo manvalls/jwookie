@@ -6,6 +6,7 @@ import hookSubmits from './submit';
 import hookForms from './form';
 import hookInputs from './input';
 import hookWS from './wsub';
+import hookRm from './rm';
 
 export default wrapFactory(() => [
   hookScroll(),
@@ -14,4 +15,5 @@ export default wrapFactory(() => [
   hookForms(),
   hookInputs(),
   hookWS(),
+  hookRm(),
 ])
