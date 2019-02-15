@@ -84,7 +84,7 @@ function shouldBeLiveChecked(element){
 }
 
 function liveUpdate(element, debounced){
-  var values, debounce, toInclude, toCheck, i, deps, formElem, headers, method, url, body;
+  var values, debounce, toInclude, toCheck, i, deps, formElem, headers, method, url, body, whitelist;
 
   clearTimeout(element.__wookie_debounceTimeout);
   delete element.__wookie_debounceTimeout;
@@ -147,15 +147,19 @@ function liveUpdate(element, debounced){
     [element.form, 'action'],
   ]) || location.href;
 
+  if (!isTrue(getFirst([[element.form, 'includeall']]))) {
+    whitelist = keys(toInclude);
+  }
+
   if (method.toLowerCase() == 'get') {
     body = null;
-    url = getValues(url, keys(toInclude), element.form);
+    url = getValues(url, whitelist, element.form);
   } else {
     if (!window.FormData) {
       return;
     }
 
-    body = getValues(null, keys(toInclude), element.form);
+    body = getValues(null, whitelist, element.form);
   }
 
   if (element.__wookie_cancelLast) {
