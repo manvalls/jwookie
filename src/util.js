@@ -176,35 +176,39 @@ export function getValues(baseURL, whitelist, form) {
   for (i = 0;i < form.elements.length;i++) {
     element = form.elements[i];
     if (element.hasAttribute('name')) {
+
       switch (element.type.toLowerCase()) {
         case 'radio':
         case 'checkbox':
           if (!element.checked) {
-            break;
+            continue;
           }
-        default:
-
-          if (whitelist && whitelist.indexOf(element.name) == -1) {
-            break;
-          }
-
-          values = getFormElementValues(element);
-          for (j = 0;j < values.length;j++) {
-            v = values[j];
-            if (baseURL) {
-              if (window.File && v instanceof window.File) {
-                v = v.name;
-              }
-
-              pairs.push(encodeURIComponent(element.name) + (v ? '=' + encodeURIComponent(v) : ''));
-            } else {
-              body.append(element.name, v);
-            }
-          }
-
           break;
-
+        case 'submit':
+          if (form.__wookie_lastClickedSubmit != element) {
+            continue;
+          }
+          break;
       }
+
+      if (whitelist && whitelist.indexOf(element.name) == -1) {
+        break;
+      }
+
+      values = getFormElementValues(element);
+      for (j = 0;j < values.length;j++) {
+        v = values[j];
+        if (baseURL) {
+          if (window.File && v instanceof window.File) {
+            v = v.name;
+          }
+
+          pairs.push(encodeURIComponent(element.name) + (v ? '=' + encodeURIComponent(v) : ''));
+        } else {
+          body.append(element.name, v);
+        }
+      }
+
     }
   }
 
