@@ -126,7 +126,7 @@ function liveUpdate(element, debounced){
     formElem = element.form.elements[i];
     if (shouldBeLiveChecked(formElem)) {
       deps = dependencies(formElem);
-      if (deps.indexOf(element.name) != -1) {
+      if (isTrue(getFirst([[element.form, 'dep']])) || deps.indexOf(element.name) != -1) {
         add(formElem, deps);
       }
     }
