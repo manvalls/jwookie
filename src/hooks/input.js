@@ -1,8 +1,8 @@
-import { hook, wrapFactory } from 'jwit';
+import { wrapFactory } from 'jwit';
+import { wkHook } from './nowk';
 
 import {
   bind,
-  getSelector,
   getFirst,
   getHeaders,
   isTrue,
@@ -58,11 +58,10 @@ function isEligible(element){
     return false;
   }
 
-  if (getFirst([[element, 'wk']]) == null) {
-    return false;
-  }
-
-  return true;
+  return isTrue(getFirst([
+    [element, 'live'],
+    [element.form, 'live'],
+  ]));
 }
 
 function shouldBeLiveChecked(element){
@@ -192,7 +191,7 @@ export function notifyChange(element){
 
 export default wrapFactory(() => {
   if (historyIsSupported()) {
-    return [hook(`${getSelector('input')}, ${getSelector('textarea')}, ${getSelector('select')}`, function (input) {
+    return wkHook('input, textarea, select', function (input) {
       bind(input, 'change', onBlur);
       bind(input, 'blur', onBlur);
       bind(input, 'input', onInput);
@@ -204,7 +203,7 @@ export default wrapFactory(() => {
           }
         },
       };
-    })];
+    });
   }
 
   return [];

@@ -1,8 +1,8 @@
-import { hook, wrapFactory } from 'jwit';
+import { wrapFactory } from 'jwit';
+import { wkHook } from './nowk';
 
 import {
   bind,
-  getSelector,
   getFirst,
   isNotSelf,
   getHeaders,
@@ -79,9 +79,9 @@ function onSubmit(e){
 
 export default wrapFactory(() => {
   if (historyIsSupported()) {
-    return [hook(getSelector('form'), function (form) {
+    return wkHook('form', function (form) {
       bind(form, 'submit', onSubmit);
-    })];
+    });
   }
 
   return [];

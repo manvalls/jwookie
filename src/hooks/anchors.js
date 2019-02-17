@@ -1,8 +1,9 @@
-import { hook, wrapFactory } from 'jwit';
+import { wrapFactory } from 'jwit';
 import getAbsoluteUrl from '../getAbsoluteUrl';
 import navigate from '../navigate';
-import { bind, getFirst, isNotSelf, getHeaders, isTrue, getSelector, origin } from '../util';
+import { bind, getFirst, isNotSelf, getHeaders, isTrue, origin } from '../util';
 import { historyIsSupported } from '../urlManager';
+import { wkHook } from './nowk';
 
 function onClick(e){
   var headers = {};
@@ -46,9 +47,9 @@ function onClick(e){
 
 export default wrapFactory(() => {
   if (historyIsSupported()) {
-    return [hook(getSelector('a'), function (a) {
+    return wkHook('a', function (a) {
       bind(a, 'click', onClick);
-    })];
+    });
   }
 
   return [];

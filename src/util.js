@@ -89,17 +89,6 @@ export function bind(element, event, handler) {
   }
 }
 
-export function getSelector(selector){
-  const selectors = [];
-  var i;
-
-  for (i = 0;i < prefixes.length;i++) {
-    selectors.push(`${selector}[${prefixes[i]}wk]`);
-  }
-
-  return selectors.join(', ');
-}
-
 export function getAttr(attr){
   const selectors = [];
   var i;
