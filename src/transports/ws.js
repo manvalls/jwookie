@@ -1,6 +1,6 @@
 import { apply } from 'jwit';
 import getAbsoluteUrl from '../getAbsoluteUrl'
-import { toQuery } from '../util';
+import { toQuery, origin, path, utf8Bytes } from '../util';
 
 const sockets = {};
 const INACTIVITY_TIMEOUT = 10e3;
@@ -214,38 +214,6 @@ function setupSocket(wsUrl){
   socket.ws.onclose = () => {
     socket.ws.onerror(new Error('Connection closed'));
   };
-}
-
-function utf8Bytes(string){
-  let total = 0;
-
-  for(let i = 0;i < string.length;i++){
-    const code = string.charCodeAt(i);
-
-    if (code <= 0x7f) {
-      total++;
-    } else if(code <= 0x7ff) {
-      total += 2;
-    } else if(code <= 0xffff) {
-      total += 3;
-    } else if(code <= 0x1fffff) {
-      total += 4;
-    } else if(code <= 0x3ffffff) {
-      total += 5;
-    } else {
-      total += 6;
-    }
-  }
-
-  return total;
-}
-
-function origin(url){
-  return (url.replace(/^ws/, 'http').match(/^[a-z]+\:\/\/.*?(?=\/)/) || [])[0];
-}
-
-function path(url){
-  return url.replace(/^[a-z]+\:\/\/.*?(?=\/)/, '');
 }
 
 function makeRequest(context, socket){
