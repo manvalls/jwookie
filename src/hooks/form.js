@@ -8,6 +8,7 @@ import {
   getHeaders,
   isTrue,
   getValues,
+  origin,
 } from '../util';
 
 import { historyIsSupported } from '../urlManager';
@@ -39,6 +40,10 @@ function onSubmit(e){
     [clickedSubmit, 'formaction'],
     [this, 'action']
   ]) || location.href;
+
+  if (origin(url) != origin(location.href)) {
+    return;
+  }
 
   if (method.toLowerCase() == 'get') {
     body = null;

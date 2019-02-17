@@ -1,4 +1,5 @@
 import { getControllers } from 'jwit';
+import getAbsoluteUrl from './getAbsoluteUrl';
 
 export function isTrue(attr){
   return attr != null && attr.toLowerCase() != 'false';
@@ -283,7 +284,7 @@ export function utf8Bytes(string){
 }
 
 export function origin(url){
-  return (url.replace(/^ws/, 'http').match(/^[a-z]+\:\/\/.*?(?=\/)/) || [])[0];
+  return (getAbsoluteUrl(url.replace(/^ws/, 'http')).match(/^[a-z]+\:\/\/.*?(?=\/)/) || [])[0];
 }
 
 export function path(url){
