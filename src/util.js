@@ -175,6 +175,7 @@ export function getValues(baseURL, whitelist, form) {
           }
           break;
         case 'submit':
+        case 'image':
           if (form.__wookie_lastClickedSubmit != element) {
             continue;
           }
