@@ -11,7 +11,7 @@ function onClick(){
 
 export default wrapFactory(() => {
   if (historyIsSupported()) {
-    return wkHook('input[type=submit], button[type=submit], input[type=image]', function (input) {
+    return wkHook('input[type=submit], button, input[type=image]', function (input) {
       bind(input, 'click', onClick);
     });
   }
