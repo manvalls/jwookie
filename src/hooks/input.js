@@ -195,7 +195,11 @@ export default wrapFactory(() => {
       bind(input, 'change', onBlur);
       bind(input, 'blur', onBlur);
       bind(input, 'input', onInput);
-  
+      
+      if (isTrue( getFirst([[input, 'autofocus']]) )) {
+        input.focus();
+      }
+
       return {
         destroy: () => {
           if (input.__wookie_cancelLast) {
