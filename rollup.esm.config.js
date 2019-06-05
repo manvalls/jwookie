@@ -12,8 +12,11 @@ export default {
       babelrc: false,
       exclude: 'node_modules/**',
       presets: [
-        ['@babel/env']
-      ]
+        ['@babel/env', {loose: true}]
+      ],
+      plugins: [
+        ['@babel/plugin-proposal-class-properties', {loose: true}]
+      ],
     }),
   ],
 };
