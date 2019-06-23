@@ -1,5 +1,5 @@
-import { wrapFactory } from 'jwit';
-import { wkHook } from './nowk';
+import { getControllerAbove, getController } from 'jwit';
+import { NoWKHook } from './nowk';
 
 import {
   bind,
@@ -171,6 +171,7 @@ function liveUpdate(element, debounced){
   }
   
   element.__wookie_cancelLast = request({
+    target: element,
     url,
     headers,
     method,
@@ -189,27 +190,32 @@ export function notifyChange(element){
   onInput.call(element)
 }
 
-export default wrapFactory(() => {
-  if (historyIsSupported()) {
-    return wkHook('input, textarea, select', function (input) {
-      bind(input, 'change', onBlur);
-      bind(input, 'blur', onBlur);
-      bind(input, 'input', onInput);
-      
-      if (isTrue( getFirst([[input, 'autofocus']]) )) {
-        input.focus();
-      }
+export class InputHook {
+  static elements = ['input', 'textarea', 'select']
 
-      return {
-        destroy: () => {
-          if (input.__wookie_cancelLast) {
-            input.__wookie_cancelLast();
-          }
-        },
-      };
-    });
+  static shouldHook() {
+    return historyIsSupported()
   }
 
-  return [];
-});
+  constructor({ node }) {
+    if (getController(node, NoWKHook) || getControllerAbove(node, NoWKHook)) {
+      return
+    }
+    
+    this.node = node
 
+    bind(node, 'change', onBlur);
+    bind(node, 'blur', onBlur);
+    bind(node, 'input', onInput);
+    
+    if (isTrue( getFirst([[node, 'autofocus']]) )) {
+      node.focus();
+    }
+  }
+
+  onDestroy() {
+    if (this.node.__wookie_cancelLast) {
+      this.node.__wookie_cancelLast();
+    }
+  }
+}

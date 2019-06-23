@@ -47,7 +47,7 @@ export default ({
     responseURL = getAbsoluteUrl(responseURL);
     responseTrigger({ responseURL });
 
-    apply(delta)(function(error){
+    apply(delta, function(error){
       if(error){
         errorTrigger({ error, responseURL });
         doneTrigger({ error, responseURL });

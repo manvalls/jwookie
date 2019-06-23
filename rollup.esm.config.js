@@ -15,7 +15,8 @@ export default {
         ['@babel/env', {loose: true}]
       ],
       plugins: [
-        ['@babel/plugin-proposal-class-properties', {loose: true}]
+        ['@babel/plugin-proposal-class-properties', {loose: true}],
+        ['@babel/plugin-transform-for-of', {assumeArray: true}],
       ],
     }),
   ],

@@ -1,5 +1,5 @@
-import { wrapFactory } from 'jwit';
-import { wkHook } from './nowk';
+import { getControllerAbove, getController } from 'jwit';
+import { NoWKHook } from './nowk';
 
 import {
   bind,
@@ -67,6 +67,7 @@ function onSubmit(e){
   this.__wookie_waiting = true;
 
   navigate({
+    target: this,
     url,
     headers,
     method,
@@ -77,12 +78,18 @@ function onSubmit(e){
   });
 }
 
-export default wrapFactory(() => {
-  if (historyIsSupported()) {
-    return wkHook('form', function (form) {
-      bind(form, 'submit', onSubmit);
-    });
+export class FormHook {
+  static elements = ['form']
+
+  static shouldHook() {
+    return historyIsSupported()
   }
 
-  return [];
-});
+  constructor({ node }) {
+    if (getController(node, NoWKHook) || getControllerAbove(node, NoWKHook)) {
+      return
+    }
+    
+    bind(node, 'submit', onSubmit);
+  }
+}

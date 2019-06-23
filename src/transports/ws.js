@@ -166,7 +166,7 @@ function setupSocket(wsUrl){
           break;
         }
 
-        apply(JSON.parse(remaining))(function(error){
+        apply(JSON.parse(remaining), function(error){
           if(error){
             resolve(id, error);
           }
@@ -180,7 +180,7 @@ function setupSocket(wsUrl){
       
       case 'APPLY':
 
-        apply(JSON.parse(remaining))(function(error){
+        apply(JSON.parse(remaining), function(error){
           if(error){
             resolve(id, error);
           }

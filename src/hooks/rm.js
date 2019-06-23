@@ -1,10 +1,20 @@
-import { wrapFactory, destroy } from 'jwit';
+import { getControllerAbove, getController, queue, destroyNode } from 'jwit';
+import { NoWKHook } from './nowk';
 import { getAttr } from '../util';
-import { wkHook } from './nowk';
 
-export default wrapFactory(() => wkHook(getAttr('rm'), function(node){
-  setTimeout(() => {
-    node.remove();
-    destroy(node);
-  });
-}));
+export class RmHook {
+  static attributes = getAttr('rm')
+
+  constructor({ node }) {
+    if (getController(node, NoWKHook) || getControllerAbove(node, NoWKHook)) {
+      return
+    }
+
+    queue(cb => {
+      destroyNode(node, () => {
+        node.remove()
+        cb()
+      })
+    })
+  }
+}

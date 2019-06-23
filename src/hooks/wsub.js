@@ -1,21 +1,27 @@
-import { wrapFactory } from 'jwit';
-import { wkHook } from './nowk';
+import { getControllerAbove, getController } from 'jwit';
+import { NoWKHook } from './nowk';
 import { getAttr, getFirst, getHeaders } from '../util';
 import applyURL from '../applyURL';
 
 const RETRY_TIMEOUT = 2e3;
 
-export default wrapFactory(() => {
-  if (typeof WebSocket == 'undefined') {
-    return [];
+export class WokSubHook {
+  static attributes = getAttr('sub')
+
+  static shouldHook() {
+    return typeof WebSocket != 'undefined'
   }
 
-  return wkHook(getAttr('sub'), function(node){
+  constructor({ node }) {
+    if (getController(node, NoWKHook) || getControllerAbove(node, NoWKHook)) {
+      return
+    }
+
     const subscription = getFirst([[node, 'sub']]);
-    let destroy;
 
     const subscribe = () => {
-      destroy = applyURL({
+      this.destroy = applyURL({
+        target: node,
         wsUrl: getFirst([[node, 'sub-url']]) || window.wsubURL || '/witsub',
         target: node,
         headers: getHeaders(node, '-sub-header', { 'X-Wok-Call': subscription }),
@@ -33,9 +39,5 @@ export default wrapFactory(() => {
     };
 
     subscribe();
-
-    return {
-      destroy: () => destroy(),
-    };
-  });
-});
+  }
+}

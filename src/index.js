@@ -1,10 +1,12 @@
-export { default as hookScroll } from './hooks/scroll';
-export { default as hookAnchors } from './hooks/anchors';
-export { default as hookSubmits } from './hooks/submit';
-export { default as hookForms } from './hooks/form';
-export { default as hookInputs } from './hooks/input';
-export { default as hookNavigation } from './hooks/navigation';
-export { default as hookRm } from './hooks/rm';
+export { ScrollHook } from './hooks/scroll';
+export { AnchorHook } from './hooks/anchors';
+export { SubmitHook } from './hooks/submit';
+export { FormHook } from './hooks/form';
+export { InputHook } from './hooks/input';
+export { RmHook } from './hooks/rm';
+export { DisabledHook } from './hooks/disabled';
+export { NoWKHook } from './hooks/nowk';
+export { WokSubHook } from './hooks/wsub';
 export { default as init } from './hooks/init';
 
 export { default as navigate, abortNavigation } from './navigate';

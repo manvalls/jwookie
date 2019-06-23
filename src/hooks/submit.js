@@ -1,20 +1,30 @@
-import { wrapFactory } from 'jwit';
 import { bind } from '../util';
 import { historyIsSupported } from '../urlManager';
-import { wkHook } from './nowk';
+import { getControllerAbove, getController } from 'jwit';
+import { NoWKHook } from './nowk';
 
 function onClick(){
+  if (this.tagName.toLowerCase() == 'input' && this.type != 'submit' && this.type != 'image') {
+    return
+  }
+
   if (this.form) {
     this.form.__wookie_lastClickedSubmit = this;
   }
 }
 
-export default wrapFactory(() => {
-  if (historyIsSupported()) {
-    return wkHook('input[type=submit], button, input[type=image]', function (input) {
-      bind(input, 'click', onClick);
-    });
+export class SubmitHook {
+  static elements = ['input', 'button']
+
+  static shouldHook() {
+    return historyIsSupported()
   }
 
-  return [];
-});
+  constructor({ node }) {
+    if (getController(node, NoWKHook) || getControllerAbove(node, NoWKHook)) {
+      return
+    }
+
+    bind(node, 'click', onClick)
+  }
+}

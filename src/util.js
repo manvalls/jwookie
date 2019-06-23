@@ -1,4 +1,4 @@
-import { getControllers } from 'jwit';
+import { getAllControllers } from 'jwit';
 import getAbsoluteUrl from './getAbsoluteUrl';
 
 export function isTrue(attr){
@@ -90,20 +90,20 @@ export function bind(element, event, handler) {
 }
 
 export function getAttr(attr){
-  const selectors = [];
+  const attrList = [];
   var i;
 
   for (i = 0;i < prefixes.length;i++) if(prefixes[i]) {
-    selectors.push(`[${prefixes[i]}${attr}]`);
+    attrList.push(prefixes[i] + attr);
   }
 
-  return selectors.join(', ');
+  return attrList;
 }
 
 export function getFormElementValues(formElement) {
   var values, i, attr, controllers, ctrl;
 
-  controllers = getControllers(formElement);
+  controllers = getAllControllers(formElement);
   for (i = 0;i < controllers.length;i++) {
     ctrl = controllers[i];
     if (typeof ctrl.overrideInputValues == 'function') {

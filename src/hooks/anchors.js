@@ -1,9 +1,9 @@
-import { wrapFactory } from 'jwit';
+import { getControllerAbove, getController } from 'jwit';
 import getAbsoluteUrl from '../getAbsoluteUrl';
 import navigate from '../navigate';
 import { bind, getFirst, isNotSelf, getHeaders, isTrue, origin } from '../util';
 import { historyIsSupported } from '../urlManager';
-import { wkHook } from './nowk';
+import { NoWKHook } from './nowk';
 
 function onClick(e){
   var headers = {};
@@ -37,6 +37,7 @@ function onClick(e){
   getHeaders(this, '-header', headers);
 
   navigate({
+    target: this,
     url,
     headers,
     postDone: () => {
@@ -45,12 +46,18 @@ function onClick(e){
   });
 }
 
-export default wrapFactory(() => {
-  if (historyIsSupported()) {
-    return wkHook('a', function (a) {
-      bind(a, 'click', onClick);
-    });
+export class AnchorHook {
+  static elements = ['a']
+  
+  static shouldHook(){
+    return historyIsSupported()
   }
 
-  return [];
-});
+  constructor({ node }){
+    if (getController(node, NoWKHook) || getControllerAbove(node, NoWKHook)) {
+      return
+    }
+
+    bind(node, 'click', onClick);
+  }
+}
