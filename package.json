@@ -7,7 +7,7 @@
   "es": "./dist/wookie.es.js",
   "sideEffects": false,
   "dependencies": {
-    "@vlrz/wc-utils": "^3.2.0",
+    "@vlrz/wc-utils": "^4.1.0",
     "apply-url": "^5.0.2",
     "create-link": "^1.0.1",
     "jwit": "^11.0.2"
