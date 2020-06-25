@@ -14,9 +14,13 @@ export default (BaseClass) => class extends BaseClass {
     }
 
     if (isTrue(getFirst([[this, 'disabled']]))) {
-      this.disabled = true
+      if (!this.disabled) {
+        this.disabled = true
+      }
     } else {
-      this.disabled = false
+      if (this.disabled) {
+        this.disabled = false
+      }
     }
   }
 }
