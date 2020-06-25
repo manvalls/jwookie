@@ -1,6 +1,6 @@
 {
   "name": "jwookie",
-  "version": "11.0.3",
+  "version": "11.0.4",
   "description": "",
   "main": "./dist/wookie.cjs.js",
   "module": "./dist/wookie.esm.js",
