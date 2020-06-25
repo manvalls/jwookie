@@ -10,8 +10,9 @@ function onClick(e) {
   }
 
   const url = getFirst([[this, 'href']])
+  const link = createLink(url)
 
-  if (url && (origin(url) != origin(location.href))) {
+  if (url && (link.origin != location.origin)) {
     return
   }
 
@@ -19,7 +20,7 @@ function onClick(e) {
     url &&
     !isTrue(getFirst([[this, 'force']])) &&
     url.match(/#.*$/) &&
-    location.href.replace(/#.*$/, '') == createLink(url).href.replace(/#.*$/, '')
+    location.href.replace(/#.*$/, '') == link.href.replace(/#.*$/, '')
   ) {
     return
   }
